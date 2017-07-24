@@ -1,0 +1,22 @@
+{
+  "name": "minecraft-bots",
+  "version": "1.0.0",
+  "description": "An assortment of bots for use in Minecraft",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lemiffe/minecraft-bots.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lemiffe/minecraft-bots/issues"
+  },
+  "homepage": "https://github.com/lemiffe/minecraft-bots#readme",
+  "dependencies": {
+    "mineflayer": "^2.6.1"
+  }
+}
