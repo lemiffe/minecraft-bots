@@ -7,21 +7,20 @@ const bot = mineflayer.createBot({
     username: botName,
     version: '1.12'
 });
-const player = bot.entity;
 
 navigatePlugin(bot);
 // bot.navigate.blocksToAvoid[132] = true; // avoid tripwire
 // bot.navigate.blocksToAvoid[59] = false; // ok to trample crops
 
 bot.on('chat', (username, message) => {
+    const player = bot.players[username].entity;
+
     if (username === bot.username) return;
     if (message.startsWith(botName)) {
         if (message.endsWith('come')) {
             bot.navigate.to(player.position.minus(player.velocity));
-        } else if (message.endsWith('follow me')) {
-            player.on('entityMoved', function () {
-               bot.chat('You are moving');
-            });
+        } else if (message.endsWith('location')) {
+            bot.chat(mineflayer.Location.entity);
         } else if (message.endsWith('stop')) {
             bot.navigate.stop();
         }
