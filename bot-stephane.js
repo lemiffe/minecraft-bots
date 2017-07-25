@@ -1,6 +1,6 @@
 const mineflayer = require('mineflayer')
 
-const myName = "Spybot";
+const myName = "Stephane";
 
 const bot = mineflayer.createBot({
     host: "localhost",
