@@ -18,14 +18,6 @@
   "homepage": "https://github.com/lemiffe/minecraft-bots#readme",
   "dependencies": {
     "mineflayer": "^2.6.1",
-    "optimist": "~0.6.1",
-    "prompt": "~1.0.0",
-    "requireindex": "~1.1.0",
-    "string": "~3.3.3",
-    "mineflayer-blockfinder": "~0.0.7",
-    "mineflayer-scaffold": "git://github.com/darthfett/mineflayer-scaffold.git",
-    "minecraft-data": "~2",
-    "vec3": "^0.1.3",
     "mineflayer-navigate": "0.0.10"
   },
   "devDependencies": {
