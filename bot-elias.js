@@ -14,13 +14,13 @@ navigatePlugin(bot);
 
 bot.on('chat', (username, message) => {
     const player = bot.players[username].entity;
-    
+
     if (username === bot.username) return;
     if (message.startsWith(botName)) {
         if (message.endsWith('come')) {
             bot.navigate.to(player.position.minus(player.velocity));
         } else if (message.endsWith('follow me')) {
-            player.on('entityMoved', function () {
+            player.on('move', function () {
                bot.chat('you are moving');
             });
         } else if (message.endsWith('stop')) {
