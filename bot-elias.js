@@ -7,7 +7,7 @@ const bot = mineflayer.createBot({
     username: botName,
     version: '1.12'
 });
-const player = bot.players[username].entity;
+const player = bot.entity;
 
 navigatePlugin(bot);
 // bot.navigate.blocksToAvoid[132] = true; // avoid tripwire
