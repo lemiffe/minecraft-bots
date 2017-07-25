@@ -20,13 +20,15 @@ bot.on('chat', (username, message) => {
         if (message.endsWith('come')) {
             bot.navigate.to(player.position.minus(player.velocity));
         } else if (message.endsWith('follow me')) {
-            player.on('move', function () {
-               bot.chat('you are moving');
-            });
+            
         } else if (message.endsWith('stop')) {
             bot.navigate.stop();
         }
     }
+});
+
+bot.on('move', function () {
+    bot.chat(`${bot.entity.position}`);
 });
 
 bot.navigate.on('pathFound', function (path) {
