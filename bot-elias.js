@@ -27,10 +27,6 @@ bot.on('chat', (username, message) => {
     }
 });
 
-bot.on('move', function () {
-    bot.chat(`${bot.entity.position}`);
-});
-
 bot.navigate.on('pathFound', function (path) {
     bot.chat(`found path. I can get there in ${path.length}  moves.`);
 });
