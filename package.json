@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/lemiffe/minecraft-bots#readme",
   "dependencies": {
-    "mineflayer": "^2.6.1"
+    "mineflayer": "^2.6.1",
+    "mineflayer-navigate": "0.0.10"
   },
   "devDependencies": {
     "nodemon": "^1.11.0"
