@@ -19,8 +19,8 @@ bot.on('chat', (username, message) => {
     if (message.startsWith(botName)) {
         if (message.endsWith('come')) {
             bot.navigate.to(player.position.minus(player.velocity));
-        } else if (message.endsWith('follow me')) {
-            
+        } else if (message.endsWith('location')) {
+            bot.chat(mineflayer.Location.entity);
         } else if (message.endsWith('stop')) {
             bot.navigate.stop();
         }
