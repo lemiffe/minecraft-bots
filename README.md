@@ -1,14 +1,14 @@
-# minecraft-bots
+# Minecraft Bots
 
 An assortment of bots for use in Minecraft
 
 ## Installation
 
-Run npm install
+- Run npm install
 
 ## Deploying
 
-To deploy simply push to master
+- To deploy simply push to master
 
 ## Usage (with minecraft-env for automatic deploys)
 
