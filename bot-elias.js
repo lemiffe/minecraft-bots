@@ -1,12 +1,11 @@
 const mineflayer = require('mineflayer');
 const navigatePlugin = require('mineflayer-navigate')(mineflayer);
 
-const myName = "Elias";
-
+const botName = 'Elias';
 const bot = mineflayer.createBot({
-    host: "localhost",
-    username: myName,
-    version: "1.12"
+    host: 'localhost',
+    username: botName,
+    version: '1.12'
 });
 const player = bot.players[username].entity;
 
@@ -15,14 +14,13 @@ navigatePlugin(bot);
 // bot.navigate.blocksToAvoid[59] = false; // ok to trample crops
 
 bot.on('chat', (username, message) => {
-
     if (username === bot.username) return;
-    if (message.startsWith(myName)) {
+    if (message.startsWith(botName)) {
         if (message.endsWith('come')) {
             bot.navigate.to(player.position.minus(player.velocity));
         } else if (message.endsWith('follow me')) {
-            player.on('move', function () {
-               bot.chat('you are moving');
+            player.on('entityMoved', function () {
+               bot.chat('You are moving');
             });
         } else if (message.endsWith('stop')) {
             bot.navigate.stop();
@@ -31,20 +29,20 @@ bot.on('chat', (username, message) => {
 });
 
 bot.navigate.on('pathFound', function (path) {
-    bot.chat("found path. I can get there in " + path.length + " moves.");
+    bot.chat(`found path. I can get there in ${path.length}  moves.`);
 });
 
 bot.navigate.on('cannotFind', function (closestPath) {
-    bot.chat("unable to find path. getting as close as possible");
+    bot.chat('unable to find path. getting as close as possible');
     bot.navigate.walk(closestPath);
 });
 
 bot.navigate.on('arrived', function () {
-    bot.chat("I have arrived");
+    bot.chat('I have arrived');
 });
 
 bot.navigate.on('interrupted', function () {
-    bot.chat("stopping");
+    bot.chat('stopping');
 });
 
 
