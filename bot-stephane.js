@@ -6,7 +6,7 @@ var radarPlugin = require('mineflayer-radar')(mineflayer);
 const botName = 'Stephane';
 const bot = mineflayer.createBot({
     host: (process.argv.length > 2) ? process.argv[2] : 'localhost',
-    username: botName,
+    username: (process.argv.length > 3) ? process.argv[3] : botName,
     version: '1.12'
 });
 
