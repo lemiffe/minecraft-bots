@@ -1,107 +1,170 @@
 const mineflayer = require('mineflayer');
 const Vec3 = require('vec3').Vec3
 const navigatePlugin = require('mineflayer-navigate')(mineflayer);
+const blockFinderPlugin = require('mineflayer-blockfinder')(mineflayer);
 
-let player = {
-    position: new Vec3(0, 0, 0),
-    username: 'arnaudschlupp'
+// --- Commands
+let COMMANDS = {
+    follow: false,
 };
-let bot = mineflayer.createBot({
+
+// --- Player
+let PLAYER = {
+    
+};
+
+// --- Bot
+let BOT = mineflayer.createBot({
     host: '35.190.221.44',
     username: 'Elias',
     version: '1.12',
 });
-bot.isFollowing = false;
 
-navigatePlugin(bot);
+// --- Plugins
+navigatePlugin(BOT);
+blockFinderPlugin(BOT);
 
-const onEntityMoved = (entity, player) => {
+// --- Events
+BOT.on('chat', (username, message) => {
+    if (username === BOT.username) return;
+
+    PLAYER = BOT.players[username].entity;
+    const input = message.toLowerCase();
+    const robot = {
+        username: BOT.username.toLowerCase()
+    };
+
+    if (input.startsWith(robot.username)) {
+        const command = input.substring(robot.username.length).trim();
+        switch (command) {
+            case 'dig':
+                BOT.navigate.to(new Vec3(Math.floor(BOT.entity.position.x), Math.floor(BOT.entity.position.y), Math.floor(BOT.entity.position.z)));
+                digDown();
+                break;
+            case 'come':
+                navigateTo(PLAYER);
+                break;
+            case 'follow':
+                setCommand('follow', true);
+                break;
+            case 'stop':
+                setCommand('follow', false);
+                break;
+            default:
+                break;
+        }
+    }
+});
+
+BOT.navigate.on('pathPartFound', function (path) {
+    BOT.chat("Going " + path.length + " meters in the general direction for now.");
+});
+
+BOT.navigate.on('pathFound', function (path) {
+    BOT.chat("I can get there in " + path.length + " moves.");
+});
+
+BOT.navigate.on('cannotFind', function (closestPath) {
+    BOT.chat("Unable to find path. Getting as close as possible.");
+    BOT.navigate.walk(closestPath);
+});
+
+BOT.navigate.on('arrived', function () {
+    BOT.chat("I have arrived!");
+});
+
+BOT.navigate.on('interrupted', function () {
+    BOT.chat("Stopping.");
+});
+
+BOT.on('entityMoved', (entity) => {
+    if (COMMANDS.follow === false) return;
+    setBotPositionToEntityPosition(entity, PLAYER);
+});
+
+// --- Functions
+function navigateTo(user) {
+    BOT.navigate.to(user.position);
+}
+
+function setBotPositionToEntityPosition(entity, player) {
     if (entity.type === 'player' && entity.username === player.username) {
-        if (!player.position.equals(entity.position)) {
-            const delta = 1;
-            bot.entity.position.set(entity.position.x - delta, entity.position.y, entity.position.z - delta);
-            bot.lookAt(entity.position.offset(0, entity.height, 0));
-            player.position.set(entity.position.x, entity.position.y, entity.position.z);
-        }
+        const delta = 1;
+        BOT.entity.position.set(entity.position.x - delta, entity.position.y, entity.position.z - delta);
     }
 }
 
-const random = (min = 1, max = 3) => {
-    return Math.abs(Math.floor(Math.random() * max - min));
+function setCommand(command, value) {
+    Object.assign(COMMANDS, { [command]: value });
 }
 
-function dig() {
-    if (bot.targetDigBlock) {
-        bot.chat(`already digging ${bot.targetDigBlock.name}`)
+function digDown(limit = 20, blockPosition = new Vec3(BOT.entity.position.x, BOT.entity.position.y - 1, BOT.entity.position.z)) {
+    if (BOT.targetDigBlock) {
+        BOT.chat(`Already digging ${bot.targetDigBlock.name}`)
     } else {
-        var target = bot.blockAt(bot.entity.position.offset(0, 0, -1))
-        if (target && bot.canDigBlock(target)) {
-            bot.chat(`starting to dig ${target.name}`)
-            bot.dig(target, onDiggingCompleted)
+        var target = BOT.blockAt(blockPosition);
+        if (target && BOT.canDigBlock(target)) {
+            BOT.chat(`starting to dig ${target.name}`)
+            BOT.dig(target, onDiggingCompleted)
         } else {
-            bot.chat('cannot dig')
+            BOT.chat('cannot dig')
         }
     }
 
-    function onDiggingCompleted(err) {
-        if (err) {
-            console.log(err.stack)
+    function onDiggingCompleted(error) {
+        if (error) {
+            BOT.chat('Error trying to dig your shit: ' + error);
             return
         }
-        bot.chat(`finished digging ${target.name}`)
+        BOT.chat(`Finished digging ${target.name}`)
+        limit--;
+        console.log(limit);
+        limit > 0 ? digDown(limit) : null;
     }
 }
 
-bot.on('spawn', () => {
-    bot.chat('Hi dude!');
-});
+// function dig(blockPosition) {
+//     if (BOT.targetDigBlock) {
+//         BOT.chat(`Already digging ${bot.targetDigBlock.name}`)
+//     } else {
+//         var target = BOT.blockAt(blockPosition);
+//         if (target && BOT.canDigBlock(target)) {
+//             BOT.chat(`starting to dig ${target.name}`)
+//             BOT.dig(target, onDiggingCompleted)
+//         } else {
+//             BOT.chat('cannot dig')
+//         }
+//     }
 
-bot.on('death', () => {
-    bot.chat('Urgh! See ya cruel world...');
-});
+//     function onDiggingCompleted(error) {
+//         if (error) {
+//             BOT.chat('Error trying to dig your shit: ' + error);
+//             return
+//         }
+//         BOT.chat(`Finished digging ${target.name}`)
+//     }
+// }
 
-bot.navigate.on('pathPartFound', function (path) {
-    bot.chat("Going " + path.length + " meters in the general direction for now.");
-});
+// function getBlockPositionAndDigToBlock(blockId = 3, maxDistance = 256) {
+//     BOT.findBlock({
+//         point: BOT.entity.position,
+//         matching: blockId,
+//         maxDistance: maxDistance,
+//         count: 1,
+//     }, (error, blocks) => handleBlockSearch(error, blocks));
 
-bot.navigate.on('pathFound', function (path) {
-    bot.chat("I can get there in " + path.length + " moves.");
-});
+//     function handleBlockSearch(error, blocks) {
+//         if (error) {
+//             BOT.chat('Error trying to find your block: ' + error);
+//             return;
+//         }
+//         if (blocks.length) {
+//             console.log(blockPosition, BOT.entity.position);
+//             dig(blocks[0].position);
+//         } else {
+//             BOT.chat("I couldn't find your block");
+//         }
 
-bot.navigate.on('cannotFind', function (closestPath) {
-    bot.chat("unable to find path. getting as close as possible");
-    bot.navigate.walk(closestPath);
-});
-
-bot.navigate.on('arrived', function () {
-    bot.chat("I have arrived");
-});
-
-bot.navigate.on('interrupted', function () {
-    bot.chat("stopping");
-});
-
-bot.on('entityMoved', (entity) => {
-    if (bot.isFollowing === true) {
-        onEntityMoved(entity, player);
-    }
-});
-
-bot.on('chat', (username, message) => {
-    const user = bot.players[username].entity;
-
-    if (username === bot.username) return;
-    if (message.startsWith(bot.username)) {
-        if (message.endsWith(`come`)) {
-            bot.entity.position = bot.navigate.to(user.position);
-        } else if (message.endsWith(`follow me`)) {
-            bot.isFollowing = true;
-            player.username = username;
-        } else if (message.endsWith(`dig`)) {
-            dig();
-        } else if (message.endsWith(`stop`)) {
-            bot.navigate.stop();
-            bot.isFollowing = false;
-        }
-    }
-});
+//         return;
+//     }
+// }
