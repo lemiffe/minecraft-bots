@@ -1,3 +1,16 @@
+// TODO
+// Digging
+// - Make command dig down/up 20 blocks / dig down/up 20
+// - Make command dig forward/backward 20 blocks / dig forward/backward 20
+// - Make command dig left/right 20 blocks / dig left/right 20
+// - Make command dig [block]
+// - Put digging pattern in place like dig in a square, a polygon, ...
+// Survival
+// - Eat
+// - Build home, chest, furnace, ...
+// - Build equipment and equip it
+// - Attack people back and flee fast to home
+
 const mineflayer = require('mineflayer');
 const Vec3 = require('vec3').Vec3
 const navigatePlugin = require('mineflayer-navigate')(mineflayer);
@@ -38,7 +51,7 @@ BOT.on('chat', (username, message) => {
         const command = input.substring(robot.username.length).trim();
         switch (command) {
             case 'dig':
-                BOT.navigate.to(new Vec3(Math.floor(BOT.entity.position.x), Math.floor(BOT.entity.position.y), Math.floor(BOT.entity.position.z)));
+                setBotPositionAboveNearestBlock();
                 digDown();
                 break;
             case 'come':
@@ -98,6 +111,10 @@ function setCommand(command, value) {
     Object.assign(COMMANDS, { [command]: value });
 }
 
+function setBotPositionAboveNearestBlock() {
+    BOT.navigate.to(new Vec3(Math.floor(BOT.entity.position.x), Math.floor(BOT.entity.position.y), Math.floor(BOT.entity.position.z)));
+}
+
 function digDown(limit = 20, blockPosition = new Vec3(BOT.entity.position.x, BOT.entity.position.y - 1, BOT.entity.position.z)) {
     if (BOT.targetDigBlock) {
         BOT.chat(`Already digging ${bot.targetDigBlock.name}`)
@@ -118,7 +135,6 @@ function digDown(limit = 20, blockPosition = new Vec3(BOT.entity.position.x, BOT
         }
         BOT.chat(`Finished digging ${target.name}`)
         limit--;
-        console.log(limit);
         limit > 0 ? digDown(limit) : null;
     }
 }
