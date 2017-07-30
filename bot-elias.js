@@ -23,10 +23,16 @@ const CONSTANTS = {
         LEFT: 'left',
         FORWARD: 'forward',
         BACKWARD: 'backward',
+    },
+    COMMAND: {
+        DIG: 'dig',
+        FOLLOW: 'follow',
+        COME: 'come',
+        STOP: 'stop',
     }
 }
-// --- Commands
-let COMMANDS = {
+// --- State
+let STATE = {
     follow: false,
 };
 
@@ -59,17 +65,17 @@ BOT.on('chat', (username, message) => {
     if (inputs[0].startsWith(robot.username)) {
         const command = inputs[1];
         switch (command) {
-            case 'dig':
+            case CONSTANTS.COMMAND.DIG:
                 dig(inputs[2], inputs[3]);
                 break;
-            case 'come':
+            case CONSTANTS.COMMAND.COME:
                 navigateTo(PLAYER);
                 break;
-            case 'follow':
-                setCommand('follow', true);
+            case CONSTANTS.COMMAND.FOLLOW:
+                setState('follow', true);
                 break;
-            case 'stop':
-                setCommand('follow', false);
+            case CONSTANTS.COMMAND.STOP:
+                setState('follow', false);
                 break;
             default:
                 break;
@@ -99,7 +105,7 @@ BOT.navigate.on('interrupted', function () {
 });
 
 BOT.on('entityMoved', (entity) => {
-    if (COMMANDS.follow === false) return;
+    if (STATE.follow === false) return;
     setBotPositionToEntityPosition(entity, PLAYER);
 });
 
@@ -115,14 +121,6 @@ function setBotPositionToEntityPosition(entity, player) {
     }
 }
 
-function setCommand(command, value) {
-    Object.assign(COMMANDS, { [command]: value });
-}
-
-function setBotPositionAboveNearestBlock() {
-    BOT.navigate.to(new Vec3(Math.floor(BOT.entity.position.x), Math.floor(BOT.entity.position.y), Math.floor(BOT.entity.position.z)));
-}
-
 function dig(direction = 'down', limit = 1) {
     navigateToNextBlockToDig(direction);
 
@@ -131,7 +129,7 @@ function dig(direction = 'down', limit = 1) {
     } else {
         const target = BOT.blockAt(getNextBlockPositionToDig(direction));
         if (target && BOT.canDigBlock(target) && target.type !== 0) {
-            console.log(`Starting to dig ${target.name}`)
+            log(`Starting to dig ${target.name}`)
             BOT.dig(target, onDiggingCompleted)
         } else {
             log('Cannot dig!')
@@ -182,6 +180,10 @@ function dig(direction = 'down', limit = 1) {
     function navigateToNextBlockToDig(direction) {
         BOT.navigate.to(getNextBlockPositionToDig(direction));
     }
+}
+
+function setState(state, value) {
+    Object.assign(STATE, { [command]: value });
 }
 
 function log(message) {
