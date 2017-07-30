@@ -1,15 +1,15 @@
 // TODO
 // Digging
-// - Make him move until next block and mine until he has done his task
-// - Make him dig more block around him so he can fell, same when moving into other directions
-// - Make him not mine water / lava or air + avoid stepping into empty areas
-// - Make command dig [block]
-// - Put digging pattern in place like dig in a square, a polygon, ...
+// // Make him move until he can mine
+// // Make him dig 3x3 so we have space to follow him
+// // Make him mine and avoid lava, fall, air and water
+// // Make command dig [number] [block]
+// // Put digging pattern in place like dig in a square, a polygon, ...
 // Survival
-// - Eat
-// - Build home, chest, furnace, ...
-// - Build equipment and equip it
-// - Attack people back and flee fast to home
+// // Eat
+// // Build home, chest, furnace, ...
+// // Build equipment and equip it
+// // Attack people back and flee fast to home
 
 const mineflayer = require('mineflayer');
 const Vec3 = require('vec3').Vec3
