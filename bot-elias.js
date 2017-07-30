@@ -1,6 +1,7 @@
 // TODO
 // Digging
-// - Make him dig more block around him so he can fell, same when moving forward
+// - Make him move until next block and mine until he has done his task
+// - Make him dig more block around him so he can fell, same when moving into other directions
 // - Make him not mine water / lava or air + avoid stepping into empty areas
 // - Make command dig [block]
 // - Put digging pattern in place like dig in a square, a polygon, ...
@@ -14,7 +15,16 @@ const mineflayer = require('mineflayer');
 const Vec3 = require('vec3').Vec3
 const navigatePlugin = require('mineflayer-navigate')(mineflayer);
 const blockFinderPlugin = require('mineflayer-blockfinder')(mineflayer);
-
+const CONSTANTS = {
+    DIRECTION: {
+        TOP: 'top',
+        BOTTOM: 'down',
+        RIGHT: 'right',
+        LEFT: 'left',
+        FORWARD: 'forward',
+        BACKWARD: 'backward',
+    }
+}
 // --- Commands
 let COMMANDS = {
     follow: false,
@@ -50,7 +60,6 @@ BOT.on('chat', (username, message) => {
         const command = inputs[1];
         switch (command) {
             case 'dig':
-                setBotPositionAboveNearestBlock();
                 dig(inputs[2], inputs[3]);
                 break;
             case 'come':
@@ -69,24 +78,24 @@ BOT.on('chat', (username, message) => {
 });
 
 BOT.navigate.on('pathPartFound', function (path) {
-    BOT.chat("Going " + path.length + " meters in the general direction for now.");
+    log("Going " + path.length + " meters in the general direction for now.");
 });
 
 BOT.navigate.on('pathFound', function (path) {
-    BOT.chat("I can get there in " + path.length + " moves.");
+    log("I can get there in " + path.length + " moves.");
 });
 
 BOT.navigate.on('cannotFind', function (closestPath) {
-    BOT.chat("Unable to find path. Getting as close as possible.");
+    log("Unable to find path. Getting as close as possible.");
     BOT.navigate.walk(closestPath);
 });
 
 BOT.navigate.on('arrived', function () {
-    BOT.chat("I have arrived!");
+    log("I have arrived!");
 });
 
 BOT.navigate.on('interrupted', function () {
-    BOT.chat("Stopping.");
+    log("Stopping.");
 });
 
 BOT.on('entityMoved', (entity) => {
@@ -114,56 +123,69 @@ function setBotPositionAboveNearestBlock() {
     BOT.navigate.to(new Vec3(Math.floor(BOT.entity.position.x), Math.floor(BOT.entity.position.y), Math.floor(BOT.entity.position.z)));
 }
 
-function dig(direction = 'down', limit = 20) {
+function dig(direction = 'down', limit = 1) {
+    navigateToNextBlockToDig(direction);
+
     if (BOT.targetDigBlock) {
-        BOT.chat(`Already digging ${bot.targetDigBlock.name}`)
+        log(`Already digging ${bot.targetDigBlock.name}`)
     } else {
-        var target = BOT.blockAt(getBlockPosition(direction));
-        if (target && BOT.canDigBlock(target)) {
-            BOT.chat(`starting to dig ${target.name}`)
+        const target = BOT.blockAt(getNextBlockPositionToDig(direction));
+        if (target && BOT.canDigBlock(target) && target.type !== 0) {
+            console.log(`Starting to dig ${target.name}`)
             BOT.dig(target, onDiggingCompleted)
         } else {
-            BOT.chat('cannot dig')
+            log('Cannot dig!')
         }
     }
 
     function onDiggingCompleted(error) {
         if (error) {
-            BOT.chat('Error trying to dig your shit: ' + error);
+            log('Error trying to dig your shit: ' + error);
             return
         }
-        BOT.chat(`Finished digging ${target.name}`)
-        limit--;
-        limit > 0 ? dig(direction, limit) : null;
+        log(`Finished digging ${target.name}`)
+
+        setTimeout(() => {
+            limit--;
+            limit > 0 ? dig(direction, limit) : null;
+        }, 1000);
+    }
+
+    function getNextBlockPositionToDig(direction) {
+        let dx = 0;
+        let dy = 0;
+        let dz = 0;
+
+        switch (direction) {
+            case CONSTANTS.DIRECTION.BOTTOM:
+                dy = -1
+                break;
+            case CONSTANTS.DIRECTION.RIGHT:
+                dx = 1
+                break;
+            case CONSTANTS.DIRECTION.LEFT:
+                dx = -1
+                break;
+            case CONSTANTS.DIRECTION.FORWARD:
+                dz = -1
+                break;
+            case CONSTANTS.DIRECTION.BACKWARD:
+                dz = 1
+                break;
+            default:
+                break;
+        }
+
+        return new Vec3(BOT.entity.position.x + dx, BOT.entity.position.y + dy, BOT.entity.position.z + dz);
+    }
+
+    function navigateToNextBlockToDig(direction) {
+        BOT.navigate.to(getNextBlockPositionToDig(direction));
     }
 }
 
-function getBlockPosition(direction) {
-    let dx = 0;
-    let dy = 0;
-    let dz = 0;
-
-    switch (direction) {
-        case 'down':
-            dy = -1
-            break;
-        case 'right':
-            dx = 1
-            break;
-        case 'left':
-            dx = -1
-            break;
-        case 'forward':
-            dz = -1
-            break;
-        case 'backward':
-            dz = 1
-            break;
-        default:
-            break;
-    }
-
-    return new Vec3(BOT.entity.position.x + dx, BOT.entity.position.y + dy, BOT.entity.position.z + dz);
+function log(message) {
+    console.log(message);
 }
 
 // function dig(blockPosition) {
