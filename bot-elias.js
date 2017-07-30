@@ -1,8 +1,7 @@
 // TODO
 // Digging
-// - Make command dig down/up 20 blocks / dig down/up 20
-// - Make command dig forward/backward 20 blocks / dig forward/backward 20
-// - Make command dig left/right 20 blocks / dig left/right 20
+// - Make him dig more block around him so he can fell, same when moving forward
+// - Make him not mine water / lava or air + avoid stepping into empty areas
 // - Make command dig [block]
 // - Put digging pattern in place like dig in a square, a polygon, ...
 // Survival
@@ -23,7 +22,7 @@ let COMMANDS = {
 
 // --- Player
 let PLAYER = {
-    
+
 };
 
 // --- Bot
@@ -42,17 +41,17 @@ BOT.on('chat', (username, message) => {
     if (username === BOT.username) return;
 
     PLAYER = BOT.players[username].entity;
-    const input = message.toLowerCase();
+    const inputs = message.toLowerCase().replace(/  +/g, ' ').split(' ');
     const robot = {
         username: BOT.username.toLowerCase()
     };
 
-    if (input.startsWith(robot.username)) {
-        const command = input.substring(robot.username.length).trim();
+    if (inputs[0].startsWith(robot.username)) {
+        const command = inputs[1];
         switch (command) {
             case 'dig':
                 setBotPositionAboveNearestBlock();
-                digDown();
+                dig(inputs[2], inputs[3]);
                 break;
             case 'come':
                 navigateTo(PLAYER);
@@ -115,11 +114,11 @@ function setBotPositionAboveNearestBlock() {
     BOT.navigate.to(new Vec3(Math.floor(BOT.entity.position.x), Math.floor(BOT.entity.position.y), Math.floor(BOT.entity.position.z)));
 }
 
-function digDown(limit = 20, blockPosition = new Vec3(BOT.entity.position.x, BOT.entity.position.y - 1, BOT.entity.position.z)) {
+function dig(direction = 'down', limit = 20) {
     if (BOT.targetDigBlock) {
         BOT.chat(`Already digging ${bot.targetDigBlock.name}`)
     } else {
-        var target = BOT.blockAt(blockPosition);
+        var target = BOT.blockAt(getBlockPosition(direction));
         if (target && BOT.canDigBlock(target)) {
             BOT.chat(`starting to dig ${target.name}`)
             BOT.dig(target, onDiggingCompleted)
@@ -135,8 +134,36 @@ function digDown(limit = 20, blockPosition = new Vec3(BOT.entity.position.x, BOT
         }
         BOT.chat(`Finished digging ${target.name}`)
         limit--;
-        limit > 0 ? digDown(limit) : null;
+        limit > 0 ? dig(direction, limit) : null;
     }
+}
+
+function getBlockPosition(direction) {
+    let dx = 0;
+    let dy = 0;
+    let dz = 0;
+
+    switch (direction) {
+        case 'down':
+            dy = -1
+            break;
+        case 'right':
+            dx = 1
+            break;
+        case 'left':
+            dx = -1
+            break;
+        case 'forward':
+            dz = -1
+            break;
+        case 'backward':
+            dz = 1
+            break;
+        default:
+            break;
+    }
+
+    return new Vec3(BOT.entity.position.x + dx, BOT.entity.position.y + dy, BOT.entity.position.z + dz);
 }
 
 // function dig(blockPosition) {
@@ -180,7 +207,6 @@ function digDown(limit = 20, blockPosition = new Vec3(BOT.entity.position.x, BOT
 //         } else {
 //             BOT.chat("I couldn't find your block");
 //         }
-
 //         return;
 //     }
 // }
